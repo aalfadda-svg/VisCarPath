@@ -67,7 +67,7 @@ class AprilTagDetector:
         self.cy = 360.0
         
         # Tag size in meters (should be configured based on actual tags)
-        self.tag_size = 0.060  # CHANGED (Lalo 6/11): was 0.08 - our printed tag (test_tag.png) is 165mm. Wrong size = all PnP distances scaled wrong ('perfect distance' bug). Measure the printed black square and update if printer rescaled it.
+        self.tag_size = 0.15  # CHANGED (Lalo 6/11): was 0.08 - our printed tag (test_tag.png) is 165mm. Wrong size = all PnP distances scaled wrong ('perfect distance' bug). Measure the printed black square and update if printer rescaled it.
 
         
     def set_camera_intrinsics(self, fx: float, fy: float, cx: float, cy: float):
