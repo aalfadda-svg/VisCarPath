@@ -136,8 +136,9 @@ class AprilTagDetector:
         return detections
     
     def filter_ground_tags(self, detections: List[AprilTagDetection],
-                          camera_pitch: float = 0.3,  # ~17 degrees downward
-                          tolerance: float = 0.2) -> List[AprilTagDetection]:
+                          #camera_pitch: float = 0.3,  # ~17 degrees downward
+                          #tolerance: float = 0.2) -> List[AprilTagDetection]:
+        return detections                  
         """
         Filter detections to only include tags likely on the ground plane
         
