@@ -15,9 +15,9 @@ class ControllerConfig:
     max_acceleration: float = 0.8     # m/s^2
     max_steer_angle: float = 0.8      # rad (approx 45 deg)
     wheelbase: float = 0.5            # m
-    lookahead_dist: float = 0.8       # m
-    obstacle_safety_margin: float = 0.3 # m
-    obstacle_slowdown_dist: float = 1.0 # m
+    lookahead_dist: float = 1.2       # m
+    obstacle_safety_margin: float = 0.6 # m
+    obstacle_slowdown_dist: float = 1.5 # m
 
 class PathFollowingController:
     def __init__(self, config: ControllerConfig):
