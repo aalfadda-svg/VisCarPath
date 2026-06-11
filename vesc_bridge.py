@@ -68,7 +68,7 @@ class VESCBridge:
     def __init__(self,
                  port: str = '/dev/ttyACM0',
                  baud_rate: int = 115200,
-                 max_duty: float = 0.4,        # CHANGED (Lalo 6/11): was max_erpm=3000.0 — throttle now uses duty cycle; 0.3-0.4 = validated range on our car
+                 max_duty: float = 0.2,        # CHANGED (Lalo 6/11): was max_erpm=3000.0 — throttle now uses duty cycle; 0.3-0.4 = validated range on our car
                  min_duty: float = 0.10,       # CHANGED (Lalo 6/11): new — friction floor so small commands still move the wheels (calibrate!)
                  servo_range: float = 0.35,    # CHANGED (Lalo 6/11): was hardcoded 0.3 below — now a parameter, easy to calibrate
                  invert_steering: bool = False):  # CHANGED (Lalo 6/11): new — set True if RIGHT command steers LEFT during testing
