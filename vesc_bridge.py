@@ -37,8 +37,12 @@ def _pack_rpm(rpm: int) -> bytes:
     return _build_packet(payload)
 
 def _pack_servo(position: float) -> bytes:
-    """VESC command 23 — Set servo position (0.0 to 1.0)"""
-    payload = bytes([23]) + struct.pack('>f', float(position))
+    """VESC command 12 - Set servo position (0.0 to 1.0)"""
+    # CHANGED (Lalo 6/11): was command 23 with float32 - wrong on both counts.
+    # VESC firmware: COMM_SET_SERVO_POS = 12, payload = uint16 of position*1000.
+    # This is why steering never worked while duty (command 5, correct) did.
+    pos = int(max(0.0, min(1.0, float(position))) * 1000)
+    payload = bytes([12]) + struct.pack('>H', pos)
     return _build_packet(payload)
 
 def _pack_duty(duty: float) -> bytes:
