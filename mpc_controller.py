@@ -36,6 +36,7 @@ class PathFollowingController:
         print("[MPC] Computing control...")
         # Only velocity is needed from the EKF for speed control
         v = self.current_state[3]
+        v = 0.0  # CHANGED (Lalo 6/11): EKF velocity is open-loop fiction - force always-forward command, no oscillation
         print(f"[MPC]   - Current state: v={v:.2f}m/s")
         
         # 1. OBSTACLE BRAKING FACTOR

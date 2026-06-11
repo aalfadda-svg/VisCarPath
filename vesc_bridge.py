@@ -68,8 +68,8 @@ class VESCBridge:
     def __init__(self,
                  port: str = '/dev/ttyACM0',
                  baud_rate: int = 115200,
-                 max_duty: float = 0.15,        # CHANGED (Lalo 6/11): was max_erpm=3000.0 — throttle now uses duty cycle; 0.3-0.4 = validated range on our car
-                 min_duty: float = 0.08,       # CHANGED (Lalo 6/11): new — friction floor so small commands still move the wheels (calibrate!)
+                 max_duty: float = 0.12,        # CHANGED (Lalo 6/11): was max_erpm=3000.0 — throttle now uses duty cycle; 0.3-0.4 = validated range on our car
+                 min_duty: float = 0.07,       # CHANGED (Lalo 6/11): new — friction floor so small commands still move the wheels (calibrate!)
                  servo_range: float = 0.35,    # CHANGED (Lalo 6/11): was hardcoded 0.3 below — now a parameter, easy to calibrate
                  invert_steering: bool = False):  # CHANGED (Lalo 6/11): new — set True if RIGHT command steers LEFT during testing
         # CHANGED (Lalo 6/11): removed max_accel and max_steer_rate parameters.
@@ -113,13 +113,17 @@ class VESCBridge:
     # They double-normalized already-normalized controller outputs (the
     # steering-killer bug). Inputs to send_command are [-1, 1] and used directly.
 
-    def _cmd_to_duty(self, accel_cmd: float) -> float:
+   def _cmd_to_duty(self, accel_cmd: float) -> float:
         # CHANGED (Lalo 6/11): replaces _accel_to_erpm — maps [-1, 1] to duty
         accel_cmd = max(-1.0, min(1.0, float(accel_cmd)))
         duty = accel_cmd * self.max_duty
-        # Friction floor: a nonzero command should actually move the car
-        if 0.0 < abs(duty) < self.min_duty:
-            duty = self.min_duty if duty > 0 else -self.min_duty
+        # CHANGED (Lalo 6/11): forward-only - negative accel meant 'ease off'
+        # but became REVERSE duty, causing back-and-forth oscillation. Coast instead.
+        if duty <= 0.0:
+            return 0.0
+        # Friction floor: a nonzero forward command should actually move the car
+        if duty < self.min_duty:
+            duty = self.min_duty
         return duty
 
     def _steer_to_servo(self, steer_cmd: float) -> float:
