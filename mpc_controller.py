@@ -11,7 +11,7 @@ from typing import List, Tuple
 @dataclass
 class ControllerConfig:
     dt: float = 0.1
-    max_velocity: float = 1.5         # m/s
+    max_velocity: float = 0.6         # m/s
     max_acceleration: float = 0.8     # m/s^2
     max_steer_angle: float = 0.8      # rad (approx 45 deg)
     wheelbase: float = 0.5            # m
@@ -91,7 +91,7 @@ class PathFollowingController:
         
         # 4. SPEED CONTROL
         dist_to_target = np.hypot(target_fwd, target_lat)
-        target_v = np.clip(dist_to_target * 1.5, 0.0, self.config.max_velocity) * speed_scale
+        target_v = np.clip(dist_to_target * 0.5, 0.0, self.config.max_velocity) * speed_scale
         print(f"[MPC]   - Speed control: target_v={target_v:.2f}m/s (dist={dist_to_target:.2f}m, scale={speed_scale:.2f})")
         
         v_error = target_v - v
