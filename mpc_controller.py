@@ -47,7 +47,7 @@ class PathFollowingController:
         speed_scale = 1.0
         if min_dist < self.config.obstacle_safety_margin:
             print(f"[MPC]   - OBSTACLE TOO CLOSE ({min_dist:.2f}m < {self.config.obstacle_safety_margin}m): HARD BRAKE")
-            return -1.0, 0.0  # Hard brake, normalized
+            return 0.0, 0.0  # CHANGED (Lalo 6/11): was -1.0 - on the VESC, negative duty = full REVERSE, not brake. 0.0 = stop.
         elif min_dist < self.config.obstacle_slowdown_dist:
             # Proportional slowing between safety margin and slowdown distance
             speed_scale = (min_dist - self.config.obstacle_safety_margin) / \
@@ -74,8 +74,7 @@ class PathFollowingController:
         if target_fwd is None:
             # No valid waypoint: brake smoothly to a stop
             print("[MPC]   - No valid waypoint found, braking to stop")
-            brake_cmd = np.clip(-v / (self.config.max_acceleration * self.config.dt), -1.0, 0.0)
-            return brake_cmd, 0.0
+            return 0.0, 0.0  # CHANGED (Lalo 6/11): was negative brake_cmd - negative duty means REVERSE on the VESC. 0.0 = stop/coast.
         
         print(f"[MPC]   - Target waypoint: fwd={target_fwd:.2f}m, lat={target_lat:.2f}m")
             
