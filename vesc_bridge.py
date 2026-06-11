@@ -113,7 +113,7 @@ class VESCBridge:
     # They double-normalized already-normalized controller outputs (the
     # steering-killer bug). Inputs to send_command are [-1, 1] and used directly.
 
-   def _cmd_to_duty(self, accel_cmd: float) -> float:
+    def _cmd_to_duty(self, accel_cmd: float) -> float:
         # CHANGED (Lalo 6/11): replaces _accel_to_erpm — maps [-1, 1] to duty
         accel_cmd = max(-1.0, min(1.0, float(accel_cmd)))
         duty = accel_cmd * self.max_duty
