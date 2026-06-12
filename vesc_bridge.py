@@ -68,8 +68,8 @@ class VESCBridge:
     def __init__(self,
                  port: str = '/dev/ttyACM0',
                  baud_rate: int = 115200,
-                 max_duty: float = 0.07,        # CHANGED (Lalo 6/11): was max_erpm=3000.0 — throttle now uses duty cycle; 0.3-0.4 = validated range on our car
-                 min_duty: float = 0.07,       # CHANGED (Lalo 6/11): new — friction floor so small commands still move the wheels (calibrate!)
+                 max_duty: float = 0.07,       # CHANGED (Lalo 6/11): calibrated on floor - slowest reliable speed, locked as ceiling
+                 min_duty: float = 0.07,       # CHANGED (Lalo 6/11): floor == ceiling -> single fixed crawl speed
                  servo_range: float = 0.35,    # CHANGED (Lalo 6/11): was hardcoded 0.3 below — now a parameter, easy to calibrate
                  invert_steering: bool = False):  # CHANGED (Lalo 6/11): new — set True if RIGHT command steers LEFT during testing
         # CHANGED (Lalo 6/11): removed max_accel and max_steer_rate parameters.
@@ -84,6 +84,11 @@ class VESCBridge:
         self.steer_sign    = -1.0 if invert_steering else 1.0  # CHANGED (Lalo 6/11): new
         self.port          = _find_vesc_port(port)   # CHANGED (Lalo 6/11): port auto-detection
         self.baud_rate     = baud_rate                # CHANGED (Lalo 6/11): stored for reconnect
+
+        # CHANGED (Lalo 6/11): state for coast-through-blindness smoothing
+        self._last_accel   = 0.0
+        self._last_steer   = 0.0
+        self._coast_count  = 0
 
         try:
             self.serial = serial.Serial(self.port, self.baud_rate, timeout=0.1)
@@ -142,6 +147,24 @@ class VESCBridge:
             if self.serial is None:
                 print("[VESC] No connection — skipping command")
                 return
+
+        # CHANGED (Lalo 6/11): coast-through-blindness. The state machine sends
+        # accel=0 the instant tag detection blinks (every few frames at 10 FPS),
+        # causing stop-start stutter. If we were just driving, hold the last
+        # command for up to coast_frames before actually stopping. A real stop
+        # (tag lost for ~1s, obstacle, target reached) still stops the car
+        # once the grace period expires. NOTE: only safe at crawl speeds -
+        # shrink coast_frames before raising max_duty.
+        coast_frames = 8   # ~0.8s of grace at 10 FPS
+        if accel <= 0.0 and self._last_accel > 0.0 and self._coast_count < coast_frames:
+            self._coast_count += 1
+            accel = self._last_accel
+            steer_rate = self._last_steer
+        else:
+            if accel > 0.0:
+                self._coast_count = 0
+            self._last_accel = accel
+            self._last_steer = steer_rate
 
         duty  = self._cmd_to_duty(accel)               # CHANGED (Lalo 6/11): was ERPM path
         servo = self._steer_to_servo(steer_rate)       # CHANGED (Lalo 6/11): no double normalize
